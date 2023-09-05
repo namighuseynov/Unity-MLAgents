@@ -1,0 +1,7 @@
+venv\Scripts\activate
+mlagents-learn --run-id=Test3
+
+mlagents-learn config/BallAgent.yaml --initialize-from=Test1 --run-id=Test2
+mlagents-learn config/BallAgent.yaml --run-id=Test1
+PAUSE
+PAUSE

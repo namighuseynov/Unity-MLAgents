@@ -8,12 +8,6 @@ public class BallAgent : Agent
     [SerializeField] private Transform _targetTransform;
     [SerializeField] private Rigidbody _rBody;
 
-    
-    private void Start()
-    {
-        _rBody = GetComponent<Rigidbody>();
-    }
-
     public override void OnEpisodeBegin()
     {
         if (this.transform.localPosition.y < 0)
@@ -38,26 +32,19 @@ public class BallAgent : Agent
         controlSignal.z = actions.ContinuousActions[1];
         _rBody.AddForce(controlSignal*10);
 
-
-
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, _targetTransform.localPosition);
 
-        if (distanceToTarget < 1.42f)
+        if (distanceToTarget < 1.3f)
         {
-            //SetReward(1.0f);
-            AddReward(10000f);
-            Vector3 newTargetPosition = new Vector3(Random.Range(-48, 48), 0.5f, Random.Range(-48, 48));
+            SetReward(10f);
+            Vector3 newTargetPosition = new Vector3(Random.Range(-19, 19), 0.5f, Random.Range(-19, 19));
             _targetTransform.localPosition = newTargetPosition;
             EndEpisode();
-        }
-        else
-        {
-            AddReward(-10f);
         }
 
         if (this.transform.localPosition.y < 0)
         {
-            AddReward(-1000f);
+            AddReward(-1f);
             EndEpisode();
         }
     }
