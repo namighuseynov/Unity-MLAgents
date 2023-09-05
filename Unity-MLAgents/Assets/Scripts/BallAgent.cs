@@ -8,6 +8,7 @@ public class BallAgent : Agent
     [SerializeField] private Transform _targetTransform;
     [SerializeField] private Rigidbody _rBody;
 
+    
     private void Start()
     {
         _rBody = GetComponent<Rigidbody>();
@@ -15,7 +16,12 @@ public class BallAgent : Agent
 
     public override void OnEpisodeBegin()
     {
-        transform.localPosition = new Vector3(0, 0, 0);
+        if (this.transform.localPosition.y < 0)
+        {
+            this._rBody.angularVelocity = Vector3.zero;
+            this._rBody.velocity = Vector3.zero;
+            this.transform.localPosition = new Vector3(0, 0.5f, 0);
+        }
     }
     public override void CollectObservations(VectorSensor sensor)
     {
@@ -30,22 +36,28 @@ public class BallAgent : Agent
         Vector3 controlSignal = Vector3.zero;
         controlSignal.x = actions.ContinuousActions[0];
         controlSignal.z = actions.ContinuousActions[1];
-        _rBody.AddForce(controlSignal);
+        _rBody.AddForce(controlSignal*10);
 
 
 
         float distanceToTarget = Vector3.Distance(this.transform.localPosition, _targetTransform.localPosition);
 
-        // Reached target
         if (distanceToTarget < 1.42f)
         {
-            SetReward(1.0f);
+            //SetReward(1.0f);
+            AddReward(10000f);
+            Vector3 newTargetPosition = new Vector3(Random.Range(-48, 48), 0.5f, Random.Range(-48, 48));
+            _targetTransform.localPosition = newTargetPosition;
             EndEpisode();
         }
-
-        // Fell off platform
-        else if (this.transform.localPosition.y < 0)
+        else
         {
+            AddReward(-10f);
+        }
+
+        if (this.transform.localPosition.y < 0)
+        {
+            AddReward(-1000f);
             EndEpisode();
         }
     }
@@ -53,7 +65,7 @@ public class BallAgent : Agent
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var continuousActionsOut = actionsOut.ContinuousActions;
-        continuousActionsOut[0] = Input.GetAxis("Horizontal");
-        continuousActionsOut[1] = Input.GetAxis("Vertical");
+        continuousActionsOut[0] = Input.GetAxisRaw("Horizontal");
+        continuousActionsOut[1] = Input.GetAxisRaw("Vertical");
     }
 }
