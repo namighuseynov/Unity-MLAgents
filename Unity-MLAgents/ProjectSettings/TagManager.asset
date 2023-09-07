@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Wall
   - Target
+  - Plane
   layers:
   - Default
   - TransparentFX

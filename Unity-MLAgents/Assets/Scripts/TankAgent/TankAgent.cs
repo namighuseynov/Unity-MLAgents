@@ -5,37 +5,57 @@ using Unity.MLAgents.Actuators;
 
 public class TankAgent : Agent
 {
-    public float motorTorque = 100f;
+    public float maxTorque = 100f;
     public float steerAngle = 30f;
     public float brakeTorque = 300f;
 
     public WheelCollider[] Wheels;
 
     private Rigidbody rbody;
+    private bool ended = false;
     [SerializeField] private Transform targetPos;
 
     private void Start()
     {
         rbody = GetComponent<Rigidbody>();
     }
+
     private void FixedUpdate()
     {
-        foreach (var wheel in Wheels) { wheel.motorTorque = motorTorque; }
+        Vector3 v_up = transform.TransformDirection(Vector3.up);
+        RaycastHit hit;
+
+        if (Physics.Raycast(transform.localPosition, v_up, out hit, 1.5f))
+        {
+            Debug.DrawRay(transform.localPosition, v_up*1.5f, Color.red);
+
+            if (hit.collider.gameObject.tag == "Plane")
+            {
+                ended = true;
+                SetReward(-1f);
+                EndEpisode();
+            }
+        }
     }
 
     public override void OnEpisodeBegin()
     {
-        if (transform.position.y < 0)
+        if (transform.localPosition.y < 0 || ended)
         {
-            Vector3 spawnPosition = new Vector3(0f, 0.5f, 0f);
-            transform.position = spawnPosition;
+            this.rbody.angularVelocity = Vector3.zero;
+            this.rbody.velocity = Vector3.zero;
+            Vector3 spawnPosition = new Vector3(0f, 0.6f, 0f);
+            Vector3 angles = new Vector3(0f, 0f, 0f);
+            transform.localPosition = spawnPosition;
+            transform.rotation = Quaternion.Euler(angles);
+            ended = false;
         }
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        sensor.AddObservation(transform.position);
-        sensor.AddObservation(targetPos.position);
+        sensor.AddObservation(transform.localPosition);
+        sensor.AddObservation(targetPos.localPosition);
 
         sensor.AddObservation(rbody.velocity.x);
         sensor.AddObservation(rbody.velocity.z);
@@ -43,27 +63,33 @@ public class TankAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actions)
     {
-        Vector3 signal = Vector3.zero;
-        signal.x = actions.ContinuousActions[0];
-        signal.y = actions.ContinuousActions[1];
+        float signalX = actions.ContinuousActions[0];
+        float signalY = actions.ContinuousActions[1];
 
-        float motorForce = motorTorque * signal.y;
-        float steeringAngle = steerAngle * signal.x;
+
+        float rotSpeed = 0.1f + rbody.velocity.magnitude / 20;
+        float dRot = signalX * rotSpeed;
+
+        float motorForce = maxTorque * signalY;
 
         foreach (var wheel in Wheels)
         {
             wheel.motorTorque = motorForce;
         }
 
-        float distance = Vector3.Distance(transform.position, targetPos.position);
-        if (distance < 1.4f)
+        transform.Rotate(Vector3.up * dRot);
+
+        float distance = Vector3.Distance(transform.localPosition, targetPos.localPosition);
+        if (distance < 5f)
         {
-            SetReward(10f);
+            SetReward(100f);
+            Vector3 newTargetPosition = new Vector3(Random.Range(-9, 9), 0.5f, Random.Range(-9, 9));
+            targetPos.localPosition = newTargetPosition;
             EndEpisode();
         }
-        if (transform.position.y < 0)
+        if (transform.localPosition.y < 0)
         {
-            SetReward(-1f);
+            AddReward(-1f);
             EndEpisode();
         }
     }
