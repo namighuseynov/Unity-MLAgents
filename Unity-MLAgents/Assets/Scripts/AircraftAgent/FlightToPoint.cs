@@ -30,8 +30,15 @@ public class FlightToPoint : Agent
     [SerializeField]
     float yawControlSensitivity = 0.2f;
 
+    [SerializeField] private Transform _target;
+    private Vector3 spawnPosition = Vector3.zero;
+    private Quaternion spawnRotation = Quaternion.identity;
+    private bool dead = false;
+
     private void Start()
     {
+        spawnPosition = transform.localPosition;
+        spawnRotation = transform.localRotation;
         rb = GetComponent<Rigidbody>();
         aircraftPhysics = GetComponent<AircraftPhysics>();
         thrustPercent = 1f;
@@ -39,12 +46,22 @@ public class FlightToPoint : Agent
 
     public override void OnEpisodeBegin()
     {
-
-    }
-
-    public override void CollectObservations(VectorSensor sensor)
-    {
-
+        if (dead)
+        {
+            dead = false;
+            rb.angularVelocity = Vector3.zero;
+            rb.velocity = Vector3.zero;
+            transform.localPosition = spawnPosition;
+            transform.localRotation = spawnRotation;
+        }
+        else
+        {
+            float YCoord = Random.Range(0, 200);
+            float ZCoord = Random.Range(-450, 450);
+            float XCoord = Random.Range(-450, 450);
+            _target.position = new Vector3(XCoord, YCoord, ZCoord);
+        }
+        
     }
 
     public override void OnActionReceived(ActionBuffers actions)
@@ -53,6 +70,18 @@ public class FlightToPoint : Agent
         Pitch = actions.ContinuousActions[1];
         Yaw = actions.ContinuousActions[2];
 
+        if (transform.localPosition.y < 0)
+        {
+            dead = true;
+            SetReward(-1f);
+            EndEpisode();
+        }
+        if (transform.localPosition.y > 500)
+        {
+            dead = true;
+            SetReward(-1f);
+            EndEpisode();
+        }
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
@@ -61,6 +90,25 @@ public class FlightToPoint : Agent
         actionSegment[0] = Input.GetAxisRaw("Roll");
         actionSegment[1] = Input.GetAxisRaw("Pitch");
         actionSegment[2] = Input.GetAxisRaw("Yaw");
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Target")
+        {
+            SetReward(10f);
+            EndEpisode();
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "Wall")
+        {
+            SetReward(-1);
+            dead = true;
+            EndEpisode();
+        }
     }
 
     //private void Update()
