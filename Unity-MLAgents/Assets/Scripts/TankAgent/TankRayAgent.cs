@@ -12,7 +12,6 @@ public class TankRayAgent : Agent
     public WheelCollider[] Wheels;
 
     private Rigidbody rbody;
-    private bool ended = false;
     [SerializeField] private Transform targetPos;
 
     private void Start()
@@ -31,24 +30,27 @@ public class TankRayAgent : Agent
 
             if (hit.collider.gameObject.tag == "Plane")
             {
-                ended = true;
                 SetReward(-1f);
                 EndEpisode();
             }
         }
     }
 
+    public override void CollectObservations(VectorSensor sensor)
+    {
+        sensor.AddObservation(transform.position);
+        sensor.AddObservation(targetPos.position);
+        sensor.AddObservation(rbody.velocity.x);
+        sensor.AddObservation(rbody.velocity.z);
+    }
+
     public override void OnEpisodeBegin()
     {
-        if (transform.localPosition.y < 0 || ended)
-        {
-            this.rbody.angularVelocity = Vector3.zero;
-            this.rbody.velocity = Vector3.zero;
-            Vector3 spawnPosition = new Vector3(0f, 0.6f, 0f);
-            transform.localPosition = spawnPosition;
-            transform.localRotation = Quaternion.Euler(Vector3.zero);
-            ended = false;
-        }
+        rbody.angularVelocity = Vector3.zero;
+        rbody.velocity = Vector3.zero;
+        Vector3 spawnPosition = new Vector3(0f, 1.6f, 0f);
+        transform.localRotation = Quaternion.Euler(Vector3.zero);
+        transform.localPosition = spawnPosition;
     }
 
     public override void OnActionReceived(ActionBuffers actions)
