@@ -12,7 +12,6 @@ public class TankAgent : Agent
     public WheelCollider[] Wheels;
 
     private Rigidbody rbody;
-    private bool ended = false;
     [SerializeField] private Transform targetPos;
 
     private void Start()
@@ -20,35 +19,19 @@ public class TankAgent : Agent
         rbody = GetComponent<Rigidbody>();
     }
 
-    private void FixedUpdate()
-    {
-        Vector3 v_up = transform.TransformDirection(Vector3.up);
-        RaycastHit hit;
-
-        if (Physics.Raycast(transform.localPosition, v_up, out hit, 1.5f))
-        {
-            Debug.DrawRay(transform.localPosition, v_up*1.5f, Color.red);
-
-            if (hit.collider.gameObject.tag == "Plane")
-            {
-                ended = true;
-                SetReward(-1f);
-                EndEpisode();
-            }
-        }
-    }
-
     public override void OnEpisodeBegin()
     {
-        if (transform.localPosition.y < 0 || ended)
+        float rotZ = transform.localEulerAngles.z;
+        if (transform.localPosition.y < 0 || ( rotZ > 90 && rotZ < 270))
         {
-            this.rbody.angularVelocity = Vector3.zero;
-            this.rbody.velocity = Vector3.zero;
-            Vector3 spawnPosition = new Vector3(0f, 0.6f, 0f);
+            rbody.angularVelocity = Vector3.zero;
+            rbody.velocity = Vector3.zero;
+
+            Vector3 spawnPosition = new Vector3(0f, 1.7f, 0f);
             Vector3 angles = new Vector3(0f, 0f, 0f);
+
             transform.localPosition = spawnPosition;
-            transform.rotation = Quaternion.Euler(angles);
-            ended = false;
+            transform.localEulerAngles = angles;
         }
     }
 
@@ -66,6 +49,7 @@ public class TankAgent : Agent
         float signalX = actions.ContinuousActions[0];
         float signalY = actions.ContinuousActions[1];
 
+        float angleBetween = Vector3.Angle(transform.forward, targetPos.position);
 
         float rotSpeed = 0.1f + rbody.velocity.magnitude / 20;
         float dRot = signalX * rotSpeed;
@@ -82,16 +66,36 @@ public class TankAgent : Agent
         float distance = Vector3.Distance(transform.localPosition, targetPos.localPosition);
         if (distance < 5f)
         {
-            SetReward(100f);
-            Vector3 newTargetPosition = new Vector3(Random.Range(-9, 9), 0.5f, Random.Range(-9, 9));
+            if (angleBetween < 30)
+            {
+                AddReward(1f);
+            }
+            else
+            {
+                AddReward(-1f);
+            }
+            Vector3 newTargetPosition = new Vector3(Random.Range(-99, 99), 0.5f, Random.Range(-99, 99));
             targetPos.localPosition = newTargetPosition;
             EndEpisode();
+
         }
         if (transform.localPosition.y < 0)
         {
             AddReward(-1f);
             EndEpisode();
         }
+        float RotZ = transform.localEulerAngles.z;
+        if ((RotZ > 90 && RotZ < 270))
+        {
+            AddReward(-1f);
+            EndEpisode();
+        }
+        
+    }
+
+    private void Update()
+    {
+        
     }
 
     public override void Heuristic(in ActionBuffers actionsOut)
