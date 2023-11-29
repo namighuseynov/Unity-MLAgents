@@ -1,0 +1,38 @@
+{
+    "BallBalanceAgent": {
+        "checkpoints": [
+            {
+                "steps": 499992,
+                "file_path": "results\\BallBalanceAgent1\\BallBalanceAgent\\BallBalanceAgent-499992.onnx",
+                "reward": 0.40000003576278687,
+                "creation_time": 1701254440.2289355,
+                "auxillary_file_paths": [
+                    "results\\BallBalanceAgent1\\BallBalanceAgent\\BallBalanceAgent-499992.pt"
+                ]
+            },
+            {
+                "steps": 500008,
+                "file_path": "results\\BallBalanceAgent1\\BallBalanceAgent\\BallBalanceAgent-500008.onnx",
+                "reward": 0.4200000286102295,
+                "creation_time": 1701254440.2649374,
+                "auxillary_file_paths": [
+                    "results\\BallBalanceAgent1\\BallBalanceAgent\\BallBalanceAgent-500008.pt"
+                ]
+            }
+        ],
+        "final_checkpoint": {
+            "steps": 500008,
+            "file_path": "results\\BallBalanceAgent1\\BallBalanceAgent.onnx",
+            "reward": 0.4200000286102295,
+            "creation_time": 1701254440.2649374,
+            "auxillary_file_paths": [
+                "results\\BallBalanceAgent1\\BallBalanceAgent\\BallBalanceAgent-500008.pt"
+            ]
+        }
+    },
+    "metadata": {
+        "stats_format_version": "0.3.0",
+        "mlagents_version": "0.29.0",
+        "torch_version": "1.7.0+cu110"
+    }
+}

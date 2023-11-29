@@ -14,42 +14,40 @@ public class TankAgent : Agent
     private Rigidbody rbody;
     [SerializeField] private Transform targetPos;
 
+    public RayPerceptionSensorComponent3D rayPerception;
+
     private void Start()
     {
         rbody = GetComponent<Rigidbody>();
+        rayPerception = GetComponent<RayPerceptionSensorComponent3D>();
     }
 
     public override void OnEpisodeBegin()
     {
         float rotZ = transform.localEulerAngles.z;
-        if (transform.localPosition.y < 0 || ( rotZ > 90 && rotZ < 270))
-        {
-            rbody.angularVelocity = Vector3.zero;
-            rbody.velocity = Vector3.zero;
 
-            Vector3 spawnPosition = new Vector3(0f, 1.7f, 0f);
-            Vector3 angles = new Vector3(0f, 0f, 0f);
+        rbody.angularVelocity = Vector3.zero;
+        rbody.velocity = Vector3.zero;
 
-            transform.localPosition = spawnPosition;
-            transform.localEulerAngles = angles;
-        }
+        Vector3 spawnPosition = new Vector3(0f, 1.7f, 0f);
+        Vector3 angles = new Vector3(0f, 0f, 0f);
+
+        transform.localPosition = spawnPosition;
+        transform.localEulerAngles = angles;
     }
 
     public override void CollectObservations(VectorSensor sensor)
     {
-        sensor.AddObservation(transform.localPosition);
-        sensor.AddObservation(targetPos.localPosition);
-
-        sensor.AddObservation(rbody.velocity.x);
-        sensor.AddObservation(rbody.velocity.z);
+        sensor.AddObservation(transform.localPosition.x);
+        sensor.AddObservation(transform.localPosition.z);
+        sensor.AddObservation(targetPos.localPosition.z);
+        sensor.AddObservation(targetPos.localPosition.z);
     }
 
     public override void OnActionReceived(ActionBuffers actions)
     {
         float signalX = actions.ContinuousActions[0];
-        float signalY = actions.ContinuousActions[1];
-
-        float angleBetween = Vector3.Angle(transform.forward, targetPos.position);
+        float signalY = Mathf.Abs(actions.ContinuousActions[1]);
 
         float rotSpeed = 0.1f + rbody.velocity.magnitude / 20;
         float dRot = signalX * rotSpeed;
@@ -64,20 +62,12 @@ public class TankAgent : Agent
         transform.Rotate(Vector3.up * dRot);
 
         float distance = Vector3.Distance(transform.localPosition, targetPos.localPosition);
-        if (distance < 5f)
+        if (distance < 6f)
         {
-            if (angleBetween < 30)
-            {
-                AddReward(1f);
-            }
-            else
-            {
-                AddReward(-1f);
-            }
+            AddReward(1f);
+
             Vector3 newTargetPosition = new Vector3(Random.Range(-99, 99), 0.5f, Random.Range(-99, 99));
             targetPos.localPosition = newTargetPosition;
-            EndEpisode();
-
         }
         if (transform.localPosition.y < 0)
         {
@@ -93,15 +83,10 @@ public class TankAgent : Agent
         
     }
 
-    private void Update()
-    {
-        
-    }
-
     public override void Heuristic(in ActionBuffers actionsOut)
     {
         var continuiousActionsOut = actionsOut.ContinuousActions;
         continuiousActionsOut[0] = Input.GetAxisRaw("Horizontal");
-        continuiousActionsOut[1] = Input.GetAxisRaw("Vertical");
+        continuiousActionsOut[1] = Mathf.Abs(Input.GetAxisRaw("Vertical"));
     }
 }

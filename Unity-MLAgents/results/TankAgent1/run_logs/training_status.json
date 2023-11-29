@@ -2,22 +2,31 @@
     "TankAgent": {
         "checkpoints": [
             {
-                "steps": 220201,
-                "file_path": "results\\TankAgent1\\TankAgent\\TankAgent-220201.onnx",
+                "steps": 499989,
+                "file_path": "results\\TankAgent1\\TankAgent\\TankAgent-499989.onnx",
                 "reward": null,
-                "creation_time": 1701174870.6798174,
+                "creation_time": 1701242495.3120062,
                 "auxillary_file_paths": [
-                    "results\\TankAgent1\\TankAgent\\TankAgent-220201.pt"
+                    "results\\TankAgent1\\TankAgent\\TankAgent-499989.pt"
+                ]
+            },
+            {
+                "steps": 500053,
+                "file_path": "results\\TankAgent1\\TankAgent\\TankAgent-500053.onnx",
+                "reward": null,
+                "creation_time": 1701242495.3410094,
+                "auxillary_file_paths": [
+                    "results\\TankAgent1\\TankAgent\\TankAgent-500053.pt"
                 ]
             }
         ],
         "final_checkpoint": {
-            "steps": 220201,
+            "steps": 500053,
             "file_path": "results\\TankAgent1\\TankAgent.onnx",
             "reward": null,
-            "creation_time": 1701174870.6798174,
+            "creation_time": 1701242495.3410094,
             "auxillary_file_paths": [
-                "results\\TankAgent1\\TankAgent\\TankAgent-220201.pt"
+                "results\\TankAgent1\\TankAgent\\TankAgent-500053.pt"
             ]
         }
     },
